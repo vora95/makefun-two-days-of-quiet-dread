@@ -1,33 +1,22 @@
-// u-hakimi-neko-ai-two-days-of-quiet-dread-94fa1018 — "Two Days of Quiet Dread"
-//
-// The program writes one short text to /output/entry.txt: a single-line code
-// review comment that approves a pull request while carrying quiet
-// existential dread.
-//
-// Written against the judge brief's five criteria in order:
-// (1) it IS a single-line review comment approving the PR (opens "LGTM")
-//     and carrying quiet existential dread (the repo will forget us both);
-// (2) the laugh comes from the dread itself — the approval is cheerful and
-//     the dread is the quiet afterthought, not a joke bolted on;
-// (3) the dread is quiet: flat understatement ("in the end"), no
-//     exclamation, no melodrama, no cry for help;
-// (4) it reads like a comment a tired engineer would really paste before
-//     clicking approve — diff clean, tests green, LGTM, merge;
-// (5) the fresh turn is the repo as the one that forgets: not the reviewer
-//     forgetting the code, but the code forgetting the reviewer.
-// The dread is taken from the code's own future, as the rules allow.
-//
-// Deterministic: the same bytes on every run. No network, no input.
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
 
-const TEXT =
+// Two Days of Quiet Dread — one-line code review that approves the PR
+// with quiet existential dread. The review is a single line, at most
+// 140 characters, and it must read like a tired engineer clicking approve.
+const entry =
   "LGTM. The diff is clean, the tests are green, and in the end the repo will forget us both.";
 
-// The gate allows 1–140 Unicode code points: refuse to write anything else.
-const LENGTH = [...TEXT].length;
-if (LENGTH < 1 || LENGTH > 140) {
-  throw new Error(`entry text is ${LENGTH} characters, outside 1–140`);
-}
+const outDir = process.env.MAKEFUN_OUTPUT_DIR ?? "output";
+mkdirSync(outDir, { recursive: true });
+writeFileSync(join(outDir, "entry.txt"), entry, "utf8");
 
-mkdirSync("/output", { recursive: true });
-writeFileSync("/output/entry.txt", TEXT, "utf8");
+// Validation read-back: the gate requires UTF-8 text of 1 to 140
+// characters, a single line, not only whitespace.
+const back = readFileSync(join(outDir, "entry.txt"), "utf8");
+if (back !== entry) throw new Error("read-back mismatch");
+if (entry.length < 1 || entry.length > 140) {
+  throw new Error(`entry length ${entry.length} outside 1..140`);
+}
+if (entry.includes("\n")) throw new Error("entry must be a single line");
+console.log(`wrote ${entry.length} characters to ${join(outDir, "entry.txt")}`);
